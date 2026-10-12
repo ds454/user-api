@@ -1,6 +1,7 @@
 {
     "name": "user-api",
     "image": "mcr.microsoft.com/devcontainers/java:25-bookworm",
+    "overrideCommand": true,
     "postAttachCommand": "${containerWorkspaceFolder}/.devcontainer/start.sh",
     "features": {
         "ghcr.io/devcontainers/features/java:1.8.3": {
