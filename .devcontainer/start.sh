@@ -4,5 +4,6 @@
 git submodule update --remote --merge
 
 # Resolve maven dependancies
-# mvn dependency:resolve
-echo Hello, World!
+mvn dependency:resolve
+
+echo Development environment configured. Happy coding!
