@@ -13,7 +13,8 @@
         "vscode": {
             "extensions": [
                 "vscjava.vscode-java-pack@0.31.1",
-                "ms-azuretools.vscode-containers@2.5.2"
+                "ms-azuretools.vscode-containers@2.5.2",
+                "drblury.protobuf-vsc@1.6.15"
             ]
         }
     }
