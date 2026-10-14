@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "User API",
+            "request": "launch",
+            "mainClass": "ds454.locomotive.userapi.Main",
+            "projectName": "user-api",
+            "envFile": [
+                "${workspaceFolder}/local-dev/env/user-api/user-api.env"
+            ]
+        }
+    ]
+}
