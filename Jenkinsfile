@@ -28,7 +28,7 @@ pipeline {
           }
         }
       }
-    },
+    }
     stage('Push') {
       steps {
         container('buildkit') {
