@@ -2,5 +2,15 @@
     "java.configuration.updateBuildConfiguration": "interactive",
     "protobuf.includes": [
         "${workspaceFolder}/local-dev/proto"
-    ]
+    ],
+    "[xml]": {
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true
+    },
+    "[groovy]": {
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true
+    },
+    "files.eol": "\n",
+    "editor.insertSpaces": true
 }
