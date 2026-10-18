@@ -1,9 +1,19 @@
 #! /bin/sh
 
 # Pull the latest submodule updates
+echo Refreshing local-dev...
 git submodule update --remote --merge
+echo Done!
 
-# Resolve maven dependancies
+# Update Maven 
+echo Pulling maven dependancies...
 mvn dependency:resolve
+echo Done!
 
-echo Development environment configured. Happy coding!
+# Compile protoc files
+echo Compiling protoc to Java...
+mvn clean compile
+echo Done!
+
+echo Development environment configured.
+echo Happy coding!

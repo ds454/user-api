@@ -1,5 +1,9 @@
 {
     "java.configuration.updateBuildConfiguration": "interactive",
+    // Ignore warnings in generated code
+    "java.diagnostic.filter": [
+        "**/target/**"
+    ],
     "protobuf.includes": [
         "${workspaceFolder}/local-dev/proto"
     ],
@@ -12,5 +16,7 @@
         "editor.insertSpaces": true
     },
     "files.eol": "\n",
-    "editor.insertSpaces": true
+    "editor.insertSpaces": true,
+    "xml.format.maxLineWidth": 0,
+    "xml.format.splitAttributes": "preserve"
 }
