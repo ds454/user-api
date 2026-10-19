@@ -8,7 +8,8 @@
             "mainClass": "ds454.locomotive.userapi.Main",
             "preLaunchTask": "Transpile Protoc",
             "envFile": [
-                "${workspaceFolder}/local-dev/env/user-api/user-api.env"
+                "${workspaceFolder}/local-dev/env/user-api/user-api.env",
+                "${workspaceFolder}/local-dev/env/user-api/db.env",
             ]
         }
     ]
