@@ -13,11 +13,25 @@ import ds454.locomotive.userapi.model.User;
 import ds454.locomotive.userapi.repository.UserRepository;
 import io.grpc.stub.StreamObserver;
 
+/**
+ * HelloService
+ * 
+ * This defines functionalities that main.java can use. Main.java, of course, is what runs
+ * on the server.
+ * 
+ */
 public class HelloService extends HelloServiceImplBase {
+    // This is what performs the logging. A Logger object writes to the log files and terminal.
     private static final Logger log = LoggerFactory.getLogger(HelloService.class);
-
+    
+    // This is how Java interacts with the SQL part of the database.
     UserRepository userRepo = RepositoryProvider.getRepository(UserRepository.class);
-
+    
+    /**    (non-Javadoc)
+     * This is an example of a method that handles a request made to the server.
+     * 
+     * @see ds454.locomotive.generated.grpc.HelloServiceGrpc.AsyncService#greet(ds454.locomotive.generated.grpc.GreetRequest, io.grpc.stub.StreamObserver)
+     */
     @Override
     public void greet(GreetRequest request, StreamObserver<GreetResponse> responseObserver) {
         log.info("Received greet request!");
@@ -38,7 +52,12 @@ public class HelloService extends HelloServiceImplBase {
         responseObserver.onNext(response.build());
         responseObserver.onCompleted();
     }
-
+    
+    /**    (non-Javadoc)
+     * This method responds to hasMet requests.
+     * 
+     * @see ds454.locomotive.generated.grpc.HelloServiceGrpc.AsyncService#hasMet(ds454.locomotive.generated.grpc.HasMetRequest, io.grpc.stub.StreamObserver)
+     */
     @Override
     public void hasMet(HasMetRequest request, StreamObserver<HasMetResponse> responseObserver) {
         var response = HasMetResponse.newBuilder();
