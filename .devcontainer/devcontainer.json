@@ -1,7 +1,7 @@
 {
     "name": "user-api",
     "image": "mcr.microsoft.com/devcontainers/java:25-bookworm",
-    "postAttachCommand": "${containerWorkspaceFolder}/.devcontainer/start.sh",
+    "postCreateCommand": "${containerWorkspaceFolder}/.devcontainer/start.sh",
     "forwardPorts": [
         8081
     ],

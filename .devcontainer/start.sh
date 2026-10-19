@@ -12,7 +12,12 @@ echo Done!
 
 # Compile protoc files
 echo Compiling protoc to Java...
-mvn clean compile
+mvn protobuf:generate
+echo Done!
+
+# Add apply alias for ptorobuf generation
+echo Setting up protobuf compilation command...
+echo alias apply=\'/workspaces/steam-service/local-dev/apply-proto-java.sh\' >> ~/.bashrc
 echo Done!
 
 echo Development environment configured.
