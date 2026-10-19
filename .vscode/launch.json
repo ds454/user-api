@@ -6,7 +6,6 @@
             "name": "User API",
             "request": "launch",
             "mainClass": "ds454.locomotive.userapi.Main",
-            "projectName": "user-api",
             "preLaunchTask": "Transpile Protoc",
             "envFile": [
                 "${workspaceFolder}/local-dev/env/user-api/user-api.env"
