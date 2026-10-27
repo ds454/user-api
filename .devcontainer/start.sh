@@ -20,5 +20,9 @@ echo Setting up protobuf compilation command...
 echo alias apply=\'/workspaces/user-api/local-dev/apply-proto-java.sh\' >> ~/.bashrc
 echo Done!
 
+echo Starting database...
+docker compose -f local-dev/docker-compose.yaml up user-api-db
+echo Done!
+
 echo Development environment configured.
 echo Happy coding!
