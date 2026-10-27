@@ -25,6 +25,14 @@ public class User {
     @Getter
     @Setter
     private String email;
+    
+    @Getter
+    @Setter
+    private String steamAccountName;
+
+    @Getter
+    @Setter
+    private String steamAccountId;
 
     public User() {
     }

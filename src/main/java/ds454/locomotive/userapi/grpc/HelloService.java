@@ -15,7 +15,7 @@ import io.grpc.stub.StreamObserver;
 
 /**
  * HelloService
- * 
+ * HelloService.java is a service implementation. It extends the base class and implements handlers for the associated RPC calls.
  * This defines functionalities that main.java can use. Main.java, of course, is what runs
  * on the server.
  * 

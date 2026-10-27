@@ -21,7 +21,7 @@ echo alias apply=\'/workspaces/user-api/local-dev/apply-proto-java.sh\' >> ~/.ba
 echo Done!
 
 echo Starting database...
-docker compose -f local-dev/docker-compose.yaml up user-api-db
+docker compose -f local-dev/docker-compose.yaml up user-api-db pgadmin
 echo Done!
 
 echo Development environment configured.
