@@ -33,13 +33,20 @@ public class User {
     @Getter
     @Setter
     private String steamAccountId;
+    
+    // List of competitions
+    
+    // List of friends
 
     public User() {
     }
 
-    public User(String username, String email) {
+    public User(String username, String email, String steamAccountName, String steamAccountId) {
         this.username = username;
         this.email = email;
+        this.steamAccountName = steamAccountName;
+        this.steamAccountId = steamAccountId;
+        // TODO: initialize friends list and competitions list.
     }
     
     

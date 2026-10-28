@@ -23,6 +23,8 @@ public class Main {
 
         log.info("Starting gRPC server on port " + Main.grpcPort);
         Server s;
+        // Add and build the service.
+        // TODO: Update to UserService
         s = ServerBuilder.forPort(Main.grpcPort)
                 .addService(new HelloService())
                 .build()
