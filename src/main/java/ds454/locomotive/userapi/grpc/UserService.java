@@ -30,6 +30,7 @@ public class UserService extends UserServiceImplBase {
     public void addUser(AddUserRequest request, StreamObserver<AddUserResponse> responseObserver) {
         // Log that the request came in.
         log.info("Received greet request!");
+        // TODO: Add server interceptor to get metadata from the request
         // Initialize variables
         var response = HasMetResponse.newBuilder();
         String username = request.getUsername();
