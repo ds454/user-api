@@ -7,8 +7,8 @@
         "--name=user-api"
     ],
     "postCreateCommand": "${containerWorkspaceFolder}/.devcontainer/start.sh",
-    "forwardPorts": [
-        8081
+    "appPort": [
+        "8081:50051"
     ],
     "features": {
         "ghcr.io/devcontainers/features/java:1.8.3": {
