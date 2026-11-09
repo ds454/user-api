@@ -15,7 +15,7 @@ public class Main {
     private static final Logger log = LoggerFactory.getLogger(Main.class);
 
     // Should be set with env variable GRPC_PORT
-    private static int grpcPort = 8081;
+    private static int grpcPort = Integer.valueOf(System.getenv().get("GRPC_PORT"));
 
     public static void main(String[] args) throws Exception {
         log.info("Starting User API Application...");
