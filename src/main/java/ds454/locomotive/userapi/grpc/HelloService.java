@@ -8,9 +8,9 @@ import ds454.locomotive.generated.grpc.GreetResponse;
 import ds454.locomotive.generated.grpc.HasMetRequest;
 import ds454.locomotive.generated.grpc.HasMetResponse;
 import ds454.locomotive.generated.grpc.HelloServiceGrpc.HelloServiceImplBase;
-import ds454.locomotive.userapi.dbconnection.RepositoryProvider;
 import ds454.locomotive.userapi.model.User;
 import ds454.locomotive.userapi.repository.UserRepository;
+import ds454.locomotive.userapi.spring.BeanProvider;
 import io.grpc.stub.StreamObserver;
 
 /**
@@ -25,7 +25,7 @@ public class HelloService extends HelloServiceImplBase {
     private static final Logger log = LoggerFactory.getLogger(HelloService.class);
     
     // This is how Java interacts with the SQL part of the database.
-    UserRepository userRepo = RepositoryProvider.getRepository(UserRepository.class);
+    UserRepository userRepo = BeanProvider.getBean(UserRepository.class);
     
     /**    (non-Javadoc)
      * This is an example of a method that handles a request made to the server.

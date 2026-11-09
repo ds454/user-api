@@ -2,9 +2,9 @@ package ds454.locomotive.userapi.grpc;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ds454.locomotive.userapi.dbconnection.RepositoryProvider;
-import ds454.locomotive.userapi.model.User;
+
 import ds454.locomotive.userapi.repository.UserRepository;
+import ds454.locomotive.userapi.spring.BeanProvider;
 import io.grpc.stub.StreamObserver;
 import ds454.locomotive.generated.grpc.AddFriendRequest;
 import ds454.locomotive.generated.grpc.AddFriendResponse;
@@ -24,7 +24,7 @@ public class UserService extends UserServiceImplBase {
     private static final Logger log = LoggerFactory.getLogger(HelloService.class);
     
     // This is how Java interacts with the SQL part of the database.
-    UserRepository userRepo = RepositoryProvider.getRepository(UserRepository.class);
+    UserRepository userRepo = BeanProvider.getBean(UserRepository.class);
     
     @Override
     public void addUser(AddUserRequest request, StreamObserver<AddUserResponse> responseObserver) {

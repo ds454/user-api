@@ -1,9 +1,11 @@
 package ds454.locomotive.userapi;
 
-import ds454.locomotive.userapi.dbconnection.RepositoryProvider;
-import ds454.locomotive.userapi.grpc.HelloService;
+import ds454.locomotive.userapi.grpc.HeaderInterceptor;
+import ds454.locomotive.userapi.grpc.UserService;
+import ds454.locomotive.userapi.spring.BeanProvider;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
+import io.grpc.ServerInterceptors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,14 +21,24 @@ public class Main {
         log.info("Starting User API Application...");
 
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext("ds454.locomotive.userapi");
-        RepositoryProvider.setContext(context);
+        BeanProvider.setContext(context);
 
         log.info("Starting gRPC server on port " + Main.grpcPort);
         Server s;
+
+        // Calls that should be authenticated need to be intercepted by the HeaderInterceptor.
+        // The HeaderInterceptor will let the gRPC handler get the user uuid and steamid from the
+        // request metadata.
+
+        // Not all calls should be authenticated, for example logging in should not be 
+        // authenticated, and internal verification gRPC calls should not be authenticated.
+        // Private gRPC services need to be implemented in a seperate class and added seperately
+        // to the server below.
+
         // Add and build the service.
         // TODO: Update to UserService
         s = ServerBuilder.forPort(Main.grpcPort)
-                .addService(new HelloService())
+                .addService(ServerInterceptors.intercept(new UserService(), new HeaderInterceptor()))
                 .build()
                 .start();
         log.info("gRPC server started.");

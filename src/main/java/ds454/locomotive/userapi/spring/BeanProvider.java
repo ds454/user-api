@@ -1,18 +1,18 @@
-package ds454.locomotive.userapi.dbconnection;
+package ds454.locomotive.userapi.spring;
 
 import org.springframework.context.ApplicationContext;
 
-public class RepositoryProvider {
+public class BeanProvider {
     private static ApplicationContext context;
 
     public static void setContext(ApplicationContext ctx) {
         context = ctx;
     }
 
-    public static <T> T getRepository(Class<T> repository) {
+    public static <T> T getBean(Class<T> bean) {
         if (context == null) {
             throw new IllegalStateException("Spring ApplicationContext has not been initialized yet!");
         }
-        return context.getBean(repository);
+        return context.getBean(bean);
     }
 }

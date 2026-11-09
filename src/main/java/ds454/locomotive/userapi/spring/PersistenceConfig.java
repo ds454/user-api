@@ -1,4 +1,4 @@
-package ds454.locomotive.userapi.dbconnection;
+package ds454.locomotive.userapi.spring;
 
 import jakarta.persistence.EntityManagerFactory;
 
