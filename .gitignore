@@ -1,6 +1,8 @@
 target/
 logs/
 
+nul
+
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup

@@ -10,7 +10,7 @@ import io.grpc.Status;
 
 public class HeaderInterceptor implements ServerInterceptor {
 
-    // What the gRPC implementation actually gets
+    // What the gRPC implementation actually gets. Stored in env/common.env
     public static final Context.Key<String> UserUuid = Context.key(System.getenv("UUID_METADATA_KEY"));
     public static final Context.Key<String> SteamId = Context.key(System.getenv("STEAMID_METADATA_KEY"));
 

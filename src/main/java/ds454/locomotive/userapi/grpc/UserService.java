@@ -31,6 +31,8 @@ public class UserService extends UserServiceImplBase {
         // Log that the request came in.
         log.info("Received greet request!");
         // TODO: Add server interceptor to get metadata from the request
+        // Since the user doesn't exist yet, they will not have a UUID or a steam id.
+
         // Initialize variables
         var response = HasMetResponse.newBuilder();
         String username = request.getUsername();
@@ -58,6 +60,14 @@ public class UserService extends UserServiceImplBase {
     
     @Override 
     public void deleteAccount(DeleteAccountRequest request, StreamObserver<DeleteAccountResponse> responseObserver) {
-        
+        // Get the UUID of the person who sent the request
+        var requesterUuid = HeaderInterceptor.UserUuid.get();
+
+        var result = DeleteAccountResponse.newBuilder();
+
+        log.debug("Received delete account request from user {}", requesterUuid);
+
+        responseObserver.onNext(result.build());
+        responseObserver.onCompleted();
     }
 }

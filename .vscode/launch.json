@@ -10,6 +10,7 @@
             "envFile": [
                 "${workspaceFolder}/local-dev/env/user-api/user-api.env",
                 "${workspaceFolder}/local-dev/env/user-api/db.env",
+                "${workspaceFolder}/local-dev/env/common.env",
             ]
         }
     ]
