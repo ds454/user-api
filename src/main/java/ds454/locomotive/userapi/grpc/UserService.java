@@ -1,10 +1,15 @@
 package ds454.locomotive.userapi.grpc;
 
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import ds454.locomotive.userapi.repository.UserRepository;
 import ds454.locomotive.userapi.spring.BeanProvider;
+import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import jakarta.transaction.Transactional;
 import ds454.locomotive.generated.grpc.AddFriendRequest;
@@ -13,48 +18,31 @@ import ds454.locomotive.generated.grpc.AddUserRequest;
 import ds454.locomotive.generated.grpc.AddUserResponse;
 import ds454.locomotive.generated.grpc.DeleteAccountRequest;
 import ds454.locomotive.generated.grpc.DeleteAccountResponse;
+import ds454.locomotive.generated.grpc.GetUserInformationFromSteamIdRequest;
+import ds454.locomotive.generated.grpc.GetUserInformationFromSteamIdResponse;
 import ds454.locomotive.generated.grpc.GetUserRequest;
 import ds454.locomotive.generated.grpc.GetUserResponse;
-import ds454.locomotive.generated.grpc.HasMetResponse;
+import ds454.locomotive.generated.grpc.LocomotiveUserInformation;
 import ds454.locomotive.generated.grpc.RemoveFriendRequest;
 import ds454.locomotive.generated.grpc.RemoveFriendResponse;
-import ds454.locomotive.generated.grpc.ValidateUserRequest;
-import ds454.locomotive.generated.grpc.ValidateUserResponse;
+import ds454.locomotive.generated.grpc.SteamServiceGrpc;
 import ds454.locomotive.generated.grpc.UserServiceGrpc.UserServiceImplBase;
 import ds454.locomotive.generated.grpc.UpdateUserRequest;
 import ds454.locomotive.generated.grpc.UpdateUserResponse;
+import ds454.locomotive.userapi.model.User;
+import ds454.locomotive.generated.grpc.problem.Problem;
+import ds454.locomotive.generated.grpc.problem.ProblemType;
 
 public class UserService extends UserServiceImplBase {
     // This is what performs the logging. A Logger object writes to the log files and terminal.
-    private static final Logger log = LoggerFactory.getLogger(HelloService.class);
+    private static final Logger log = LoggerFactory.getLogger(UserService.class);
     
     // This is how Java interacts with the SQL part of the database.
     UserRepository userRepo = BeanProvider.getBean(UserRepository.class);
     
-    @Override
-    public void addUser(AddUserRequest request, StreamObserver<AddUserResponse> responseObserver) {
-        // Log that the request came in.
-        log.info("Received add user request!");
-        // TODO: Add server interceptor to get metadata from the request
-        // Since the user doesn't exist yet, they will not have a UUID or a steam id.
-        
-        // Initialize variables
-        var response = HasMetResponse.newBuilder();
-        String username = request.getUsername();
-        String email = request.getEmailAddress();
-        String steamAccountName = request.getSteamAccountName();
-        String steamAccountId = request.getSteamAccountId();
-        // Create the user, and don't forget error handling, especially with add requests.
-        // Validate Steam Account. If invalid, return an error. Use GetUserInformationFromSteamId
-        
-        // Make sure the username is unique. If not, return an error.
-        
-        // User newUser = new User(username, email, steamAccountName, steamAccountId)
-        
-        // Log the new user was created
-        
-        // Return the new user or a Problem with problem type and message.
-    }
+    // Interact with the Steam Service to validate account creation
+    private final SteamServiceGrpc.SteamServiceBlockingStub steamStub =
+        BeanProvider.getBean(SteamServiceGrpc.SteamServiceBlockingStub.class);
     
     @Override
     @Transactional
@@ -88,13 +76,22 @@ public class UserService extends UserServiceImplBase {
     }
     
     @Override
-    public void validateUserCredentials(ValidateUserRequest request, StreamObserver<ValidateUserResponse> responseObserver) {
+    public void updateUser(UpdateUserRequest request, StreamObserver<UpdateUserResponse> responseObserver) {
         
     }
     
-    @Override
-    public void updateUser(UpdateUserRequest request, StreamObserver<UpdateUserResponse> responseObserver) {
-        
+    // Sends a single Problem and completes the stream. Every error path uses this.
+    // TODO: Make a utility class in the util folder and put this and other helper methods in it.
+    private <T> void sendProblem(StreamObserver<T> observer, ProblemType type, String field,
+            String message, Function<Problem, T> responseFactory) {
+        Problem.Builder problem = Problem.newBuilder().setProblem(type).setMessage(message);
+
+        if (field != null) {
+            problem.setField(field);
+        }
+
+        observer.onNext(responseFactory.apply(problem.build()));
+        observer.onCompleted();
     }
     
 }

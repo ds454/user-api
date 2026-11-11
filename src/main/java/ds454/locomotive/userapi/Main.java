@@ -1,7 +1,9 @@
 package ds454.locomotive.userapi;
 
 import ds454.locomotive.userapi.grpc.HeaderInterceptor;
+import ds454.locomotive.userapi.grpc.InternalUserService;
 import ds454.locomotive.userapi.grpc.UserService;
+import ds454.locomotive.userapi.grpc.AddUserImpl;
 import ds454.locomotive.userapi.spring.BeanProvider;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
@@ -36,9 +38,10 @@ public class Main {
         // to the server below.
 
         // Add and build the service.
-        // TODO: Update to UserService
         s = ServerBuilder.forPort(Main.grpcPort)
                 .addService(ServerInterceptors.intercept(new UserService(), new HeaderInterceptor()))
+                .addService(new InternalUserService())
+                .addService(new AddUserImpl())
                 .build()
                 .start();
         log.info("gRPC server started.");

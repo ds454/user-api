@@ -16,7 +16,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -45,6 +44,10 @@ public class User {
     @Setter
     private String steamAccountId;
     
+    @Getter 
+    @Setter 
+    private String password;
+    
     // Stores friend IDs in a separate table: user_friends(user_id, friend_id)
     @ElementCollection
     @CollectionTable(name = "user_friends", joinColumns = @JoinColumn(name = "user_id"))
@@ -55,13 +58,22 @@ public class User {
     // TODO: change to protected when done testing.
     public User() {
     }
+    
+    // TODO: delete when deprecated fully.
+    public User (String username, String email, String steamAccountName, String steamAccountId) {
+        this.username = username;
+        this.email = email;
+        this.steamAccountName = steamAccountName;
+        this.steamAccountId = steamAccountId;
+    }
 
-    public User(String username, String email, String steamAccountName, String steamAccountId) {
+    public User(String username, String email, String steamAccountName, String steamAccountId, String password) {
         // UUID is assigned on call to save(), which makes sense to me.
         this.username = username;
         this.email = email;
         this.steamAccountName = steamAccountName;
         this.steamAccountId = steamAccountId;
+        this.password = password;
     }
     
     // Manipulate the friends list.
