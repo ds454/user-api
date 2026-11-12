@@ -63,7 +63,7 @@ public class UserService extends UserServiceImplBase {
         var userFromRepo = userRepo.findById(uuid);
         // Catch errors with UUID.
         if (userFromRepo.isEmpty()) {
-            log.warn("Received invalid UUID %s.", headerUuid);
+            log.warn("Received invalid UUID " + headerUuid + ".", headerUuid);
             GrpcUtils.sendProblem(responseObserver, ProblemType.InvalidInput,"header UUID",
                 "Invalid UUID extracted from header" + headerUuid + ".",
                 problem -> GetUserResponse.newBuilder().setProblem(problem).build());

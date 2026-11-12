@@ -12,7 +12,7 @@ import ds454.locomotive.generated.grpc.GetUserInformationFromSteamIdRequest;
 import ds454.locomotive.generated.grpc.GetUserInformationFromSteamIdResponse;
 import ds454.locomotive.generated.grpc.LocomotiveUserInformation;
 import ds454.locomotive.generated.grpc.SteamServiceGrpc;
-import ds454.locomotive.generated.grpc.UserServiceGrpc.UserServiceImplBase;
+import ds454.locomotive.generated.grpc.AddUserServiceGrpc.AddUserServiceImplBase;
 import ds454.locomotive.generated.grpc.problem.ProblemType;
 import ds454.locomotive.userapi.model.User;
 import ds454.locomotive.userapi.repository.UserRepository;
@@ -24,10 +24,10 @@ import io.grpc.stub.StreamObserver;
 
 import ds454.locomotive.userapi.util.GrpcUtils;
 
-public class AddUserImpl extends UserServiceImplBase {
+public class AddUserService extends AddUserServiceImplBase {
     
 // This is what performs the logging. A Logger object writes to the log files and terminal.
-    private static final Logger log = LoggerFactory.getLogger(AddUserImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(AddUserService.class);
     
     // This is how Java interacts with the SQL part of the database.
     UserRepository userRepo = BeanProvider.getBean(UserRepository.class);
