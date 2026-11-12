@@ -1,7 +1,6 @@
 package ds454.locomotive.userapi.grpc;
 
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +13,6 @@ import ds454.locomotive.generated.grpc.GetUserInformationFromSteamIdResponse;
 import ds454.locomotive.generated.grpc.LocomotiveUserInformation;
 import ds454.locomotive.generated.grpc.SteamServiceGrpc;
 import ds454.locomotive.generated.grpc.UserServiceGrpc.UserServiceImplBase;
-import ds454.locomotive.generated.grpc.problem.Problem;
 import ds454.locomotive.generated.grpc.problem.ProblemType;
 import ds454.locomotive.userapi.model.User;
 import ds454.locomotive.userapi.repository.UserRepository;
@@ -23,6 +21,8 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
+
+import ds454.locomotive.userapi.util.GrpcUtils;
 
 public class AddUserImpl extends UserServiceImplBase {
     
@@ -47,9 +47,10 @@ public class AddUserImpl extends UserServiceImplBase {
         
         // Initialize variables
         String username = request.getUsername();
-        String email = request.getEmailAddress();
+        String emailAddress = request.getEmailAddress();
         String steamAccountName = request.getSteamAccountName();
         String steamAccountId = request.getSteamAccountId();
+        String password = request.getPassword();
         // Create the user, and don't forget error handling, especially with add requests.
         // Validate Steam Account. If invalid, return an error. Use GetUserInformationFromSteamId
         
@@ -66,19 +67,19 @@ public class AddUserImpl extends UserServiceImplBase {
 
         // 1. Basic input checks. Proto3 strings are never null, only empty.
         if (username.isBlank()) {
-            sendProblem(responseObserver, ProblemType.InvalidInput, "username", "Username is required",
+            GrpcUtils.sendProblem(responseObserver, ProblemType.InvalidInput, "username", "Username is required",
                     problem -> AddUserResponse.newBuilder().setProblem(problem).build());
             return;
         }
         if (steamAccountId.isBlank()) {
-            sendProblem(responseObserver, ProblemType.InvalidInput, "steamAccountId", "Steam account ID is required",
+            GrpcUtils.sendProblem(responseObserver, ProblemType.InvalidInput, "steamAccountId", "Steam account ID is required",
                     problem -> AddUserResponse.newBuilder().setProblem(problem).build());
             return;
         }
 
         // 2. Username must be unique (cheap local check before the network call).
         if (userRepo.existsByUsername(username)) {
-            sendProblem(responseObserver, ProblemType.InvalidInput, "username", "Username is already taken",
+            GrpcUtils.sendProblem(responseObserver, ProblemType.InvalidInput, "username", "Username is already taken",
                     problem -> AddUserResponse.newBuilder().setProblem(problem).build());
             return;
         }
@@ -91,7 +92,7 @@ public class AddUserImpl extends UserServiceImplBase {
         } catch (StatusRuntimeException e) {
             // Transport-level failure: Steam service down, timed out, etc.
             log.warn("Steam service call failed: {}", e.getStatus());
-            sendProblem(responseObserver, ProblemType.UnableToConnectToSteam, "steamAccountId",
+            GrpcUtils.sendProblem(responseObserver, ProblemType.UnableToConnectToSteam, "steamAccountId",
                     "Could not reach the Steam service",
                     problem -> AddUserResponse.newBuilder().setProblem(problem).build());
             return;
@@ -108,14 +109,14 @@ public class AddUserImpl extends UserServiceImplBase {
             case STEAM_USER_INFO -> {
                 String actualName = steamResponse.getSteamUserInfo().getSteamUsername();
                 if (!actualName.equals(steamAccountName)) {
-                    sendProblem(responseObserver, ProblemType.InvalidInput, "steamAccountName",
+                    GrpcUtils.sendProblem(responseObserver, ProblemType.InvalidInput, "steamAccountName",
                             "Steam account name doesn't match that Steam ID",
                             problem -> AddUserResponse.newBuilder().setProblem(problem).build());
                     return;
                 }
             }
             case RESULT_NOT_SET -> {
-                sendProblem(responseObserver, ProblemType.ServerError, null,
+                GrpcUtils.sendProblem(responseObserver, ProblemType.ServerError, null,
                         "Steam service returned an empty response",
                         problem -> AddUserResponse.newBuilder().setProblem(problem).build());
                 return;
@@ -125,33 +126,19 @@ public class AddUserImpl extends UserServiceImplBase {
         // 4. Save. Hibernate generates the UUID here. The unique constraint on
         //    username backstops the race between the check in step 2 and this insert.
         try {
-            User saved = userRepo.save(new User(username, email, steamAccountName, steamAccountId));
+            User saved = userRepo.save(new User(username, emailAddress, steamAccountName, steamAccountId, password));
             log.info("Created user {} ({})", saved.getUsername(), saved.getId());
             // 5. Return the new user's information. A brand-new user has no friends.
             var info = LocomotiveUserInformation.newBuilder().setUsername(saved.getUsername())
-                                .setEmailAddress(email).setSteamAccountName(steamAccountName)
+                                .setEmailAddress(emailAddress).setSteamAccountName(steamAccountName)
                                 .setSteamAccountId(steamAccountId).build();
 
             responseObserver.onNext(AddUserResponse.newBuilder().setUserInfo(info).build());
             responseObserver.onCompleted();
         } catch (DataIntegrityViolationException e) {
-            sendProblem(responseObserver, ProblemType.InvalidInput, "username", "Username is already taken",
+            GrpcUtils.sendProblem(responseObserver, ProblemType.InvalidInput, "username", "Username is already taken",
                     problem -> AddUserResponse.newBuilder().setProblem(problem).build());
         }
     }
     
-    // Sends a single Problem and completes the stream. Every error path uses this.
-    // TODO: Make a utility class in the util folder and put this and other helper methods in it.
-    private <T> void sendProblem(StreamObserver<T> observer, ProblemType type, String field,
-            String message, Function<Problem, T> responseFactory) {
-        Problem.Builder problem = Problem.newBuilder().setProblem(type).setMessage(message);
-
-        if (field != null) {
-            problem.setField(field);
-        }
-
-        observer.onNext(responseFactory.apply(problem.build()));
-        observer.onCompleted();
-    }
-
 }

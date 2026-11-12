@@ -34,7 +34,7 @@ public class User {
 
     @Getter
     @Setter
-    private String email;
+    private String emailAddress;
     
     @Getter
     @Setter
@@ -58,19 +58,11 @@ public class User {
     // TODO: change to protected when done testing.
     public User() {
     }
-    
-    // TODO: delete when deprecated fully.
-    public User (String username, String email, String steamAccountName, String steamAccountId) {
-        this.username = username;
-        this.email = email;
-        this.steamAccountName = steamAccountName;
-        this.steamAccountId = steamAccountId;
-    }
 
-    public User(String username, String email, String steamAccountName, String steamAccountId, String password) {
+    public User(String username, String emailAddress, String steamAccountName, String steamAccountId, String password) {
         // UUID is assigned on call to save(), which makes sense to me.
         this.username = username;
-        this.email = email;
+        this.emailAddress = emailAddress;
         this.steamAccountName = steamAccountName;
         this.steamAccountId = steamAccountId;
         this.password = password;
