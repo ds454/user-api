@@ -13,6 +13,7 @@ import io.grpc.stub.StreamObserver;
 import org.springframework.transaction.annotation.Transactional;
 import ds454.locomotive.generated.grpc.AddFriendRequest;
 import ds454.locomotive.generated.grpc.AddFriendResponse;
+import ds454.locomotive.generated.grpc.AddUserResponse;
 import ds454.locomotive.generated.grpc.DeleteAccountRequest;
 import ds454.locomotive.generated.grpc.DeleteAccountResponse;
 import ds454.locomotive.generated.grpc.GetThisUserRequest;
@@ -165,15 +166,15 @@ public class UserService extends UserServiceImplBase {
     @Override
     @Transactional 
     public void removeFriend(RemoveFriendRequest request, StreamObserver<RemoveFriendResponse> responseObserver) {
-        // TODO: logging
+        // TODO: logging. Consider handling exceptions for malformed UUIDs/validating UUIDs before using.
+        // Exceptions are undesirable in the output log, no?
+        
         // Get user requesting to remove a friend
-        String id = HeaderInterceptor.UserUuid.get();
-        UUID uuid = UUID.fromString(id);
+        UUID uuid = UUID.fromString(HeaderInterceptor.UserUuid.get());
         var userFromRepo = userRepo.findById(uuid);
         
-        // Get new friend
-        id = request.getFriendUuid();
-        UUID friendUuid = UUID.fromString(id);
+        // Get friend
+        UUID friendUuid = UUID.fromString(request.getFriendUuid());
         var friendFromRepo = userRepo.findById(friendUuid);
         
         if (uuid.equals(friendUuid)) {
@@ -213,6 +214,7 @@ public class UserService extends UserServiceImplBase {
         for (UUID friendId : user.getFriends()) {
             if (friendId == null) {
                 // Since a friend was just added, this should never happen.
+                // TODO: Is this the best solution here?
                 throw new IllegalStateException("Friend list contains a null UUID");
             }
             responseBuilder.addFriendIds(friendId.toString());
@@ -224,19 +226,73 @@ public class UserService extends UserServiceImplBase {
     
     @Override 
     public void deleteAccount(DeleteAccountRequest request, StreamObserver<DeleteAccountResponse> responseObserver) {
-        // Get the UUID of the person who sent the request
-        var requesterUuid = HeaderInterceptor.UserUuid.get();
-
-        var result = DeleteAccountResponse.newBuilder();
-
-        log.debug("Received delete account request from user {}", requesterUuid);
+        // TODO: The procedure to validate a user is repeated in every method. Place it in a helper method.
+        // Retrieve UUID from request body
+        UUID uuid = UUID.fromString(HeaderInterceptor.UserUuid.get());
+        var userFromRepo = userRepo.findById(uuid);
+        
+        // Catch errors with UUID.
+        if (userFromRepo.isEmpty()) {
+            log.warn("Received invalid UUID " + uuid.toString() + ".", uuid);
+            GrpcUtils.sendProblem(responseObserver, ProblemType.InvalidInput,"header UUID",
+                "Invalid UUID extracted from header" + uuid.toString() + ".",
+                problem -> DeleteAccountResponse.newBuilder().setProblem(problem).build());
+            return;
+        }
+        
+        String username = request.getUsername();
+        
+        // Why is this debug instead of info?
+        log.debug("Received delete account request from user {}", uuid);
+        
+        // Delete the user
+        User user = userFromRepo.get();
+        userRepo.delete(user);
+        
+        // Construct and send response
+        var result = DeleteAccountResponse.newBuilder().setGoodByeMessage("Steam on, " + username + ".");
 
         responseObserver.onNext(result.build());
         responseObserver.onCompleted();
     }
     
+    // UpdateUser is implemented in diametric opposition to all best practices.
+    // It is not cybersecure in any way.
     @Override
     public void updateUser(UpdateUserRequest request, StreamObserver<UpdateUserResponse> responseObserver) {
+        // Retrieve UUID from request body
+        UUID uuid = UUID.fromString(HeaderInterceptor.UserUuid.get());
+        var userFromRepo = userRepo.findById(uuid);
+        
+        // Catch errors with UUID.
+        if (userFromRepo.isEmpty()) {
+            log.warn("Received invalid UUID " + uuid.toString() + ".", uuid);
+            GrpcUtils.sendProblem(responseObserver, ProblemType.InvalidInput,"header UUID",
+                "Invalid UUID extracted from header" + uuid.toString() + ".",
+                problem -> UpdateUserResponse.newBuilder().setProblem(problem).build());
+            return;
+        }
+        
+        // Get and update the fields of the user.
+        // TODO: honestly, it doesn't matter. Add updating the password here.
+        User user = userFromRepo.get();
+        user.setUsername(request.getUsername());
+        user.setSteamAccountName(request.getSteamAccountName());
+        user.setSteamAccountId(request.getSteamAccountId());
+        user.setEmailAddress(request.getEmailAddress());
+        user.setPassword(request.getPassword());
+        // Save to repository
+        userRepo.save(user);
+        
+        // Send response
+        log.info("Updated user {} ({})", user.getUsername(), user.getId());
+        // 5. Return the new user's information. A brand-new user has no friends.
+        var info = LocomotiveUserInformation.newBuilder().setUsername(user.getUsername())
+                        .setEmailAddress(user.getEmailAddress()).setSteamAccountName(user.getSteamAccountName())
+                        .setSteamAccountId(user.getSteamAccountId()).build();
+
+        responseObserver.onNext(UpdateUserResponse.newBuilder().setUserInfo(info).build());
+        responseObserver.onCompleted();
         
     }
     
