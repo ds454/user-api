@@ -15,6 +15,8 @@ import ds454.locomotive.generated.grpc.AddFriendRequest;
 import ds454.locomotive.generated.grpc.AddFriendResponse;
 import ds454.locomotive.generated.grpc.DeleteAccountRequest;
 import ds454.locomotive.generated.grpc.DeleteAccountResponse;
+import ds454.locomotive.generated.grpc.GetThisUserRequest;
+import ds454.locomotive.generated.grpc.GetThisUserResponse;
 import ds454.locomotive.generated.grpc.GetUserRequest;
 import ds454.locomotive.generated.grpc.GetUserResponse;
 import ds454.locomotive.generated.grpc.LocomotiveUserInformation;
@@ -73,6 +75,31 @@ public class UserService extends UserServiceImplBase {
                         .setSteamAccountName(user.getSteamAccountName()).setSteamAccountId(user.getSteamAccountId()).build();
         
         responseObserver.onNext(GetUserResponse.newBuilder().setUserInfo(info).build());
+        responseObserver.onCompleted();
+    }
+    
+    @Override
+    @Transactional
+    public void getThisUser(GetThisUserRequest request, StreamObserver<GetThisUserResponse> responseObserver) {
+        // TODO: logging
+        // Retrieve UUID from request body
+        UUID uuid = UUID.fromString(HeaderInterceptor.UserUuid.get());
+        var userFromRepo = userRepo.findById(uuid);
+        
+        // Catch errors with UUID.
+        if (userFromRepo.isEmpty()) {
+            log.warn("Received invalid UUID " + uuid.toString() + ".", uuid);
+            GrpcUtils.sendProblem(responseObserver, ProblemType.InvalidInput,"header UUID",
+                "Invalid UUID extracted from header" + uuid.toString() + ".",
+                problem -> GetThisUserResponse.newBuilder().setProblem(problem).build());
+            return;
+        }
+        User user = userFromRepo.get();
+        // Build response from user data
+        var info = LocomotiveUserInformation.newBuilder().setUsername(user.getUsername()).setEmailAddress(user.getEmailAddress())      
+                        .setSteamAccountName(user.getSteamAccountName()).setSteamAccountId(user.getSteamAccountId()).build();
+        
+        responseObserver.onNext(GetThisUserResponse.newBuilder().setUserInfo(info).build());
         responseObserver.onCompleted();
     }
     
@@ -138,7 +165,61 @@ public class UserService extends UserServiceImplBase {
     @Override
     @Transactional 
     public void removeFriend(RemoveFriendRequest request, StreamObserver<RemoveFriendResponse> responseObserver) {
+        // TODO: logging
+        // Get user requesting to remove a friend
+        String id = HeaderInterceptor.UserUuid.get();
+        UUID uuid = UUID.fromString(id);
+        var userFromRepo = userRepo.findById(uuid);
         
+        // Get new friend
+        id = request.getFriendUuid();
+        UUID friendUuid = UUID.fromString(id);
+        var friendFromRepo = userRepo.findById(friendUuid);
+        
+        if (uuid.equals(friendUuid)) {
+            GrpcUtils.sendProblem(responseObserver, ProblemType.InvalidInput, "friendUuid",
+                "You cannot remove yourself as a friend",
+                problem -> RemoveFriendResponse.newBuilder().setProblem(problem).build());
+            return;
+        }
+        
+        // Validate both users exist.
+        if (userFromRepo.isEmpty()) {
+            log.warn("Received invalid UUID " + uuid.toString() + ".", uuid);
+            GrpcUtils.sendProblem(responseObserver, ProblemType.InvalidInput,"header UUID",
+                "Invalid UUID extracted from header" + uuid.toString() + ".",
+                problem -> RemoveFriendResponse.newBuilder().setProblem(problem).build());
+            return;
+        } 
+        if (friendFromRepo.isEmpty()) {
+            log.warn("Received invalid friend UUID " + friendUuid.toString() + ".", friendUuid);
+            GrpcUtils.sendProblem(responseObserver, ProblemType.InvalidInput,"friend UUID",
+                "Invalid UUID for friend to remove" + friendUuid.toString() + ".",
+                problem -> RemoveFriendResponse.newBuilder().setProblem(problem).build());
+            return;
+        }
+        
+        // Remove friendFromRepo from the userFromRepo's friend list and remove userFromRepo from friendFromRepo's friend list.
+        User user = userFromRepo.get();
+        User friend = friendFromRepo.get();
+        
+        user.removeFriend(friendUuid);
+        friend.removeFriend(uuid);
+        userRepo.save(user);
+        userRepo.save(friend);
+        
+        // Return userFromRepo's updated friend list
+        RemoveFriendResponse.Builder responseBuilder = RemoveFriendResponse.newBuilder().setSuccess(true);
+        for (UUID friendId : user.getFriends()) {
+            if (friendId == null) {
+                // Since a friend was just added, this should never happen.
+                throw new IllegalStateException("Friend list contains a null UUID");
+            }
+            responseBuilder.addFriendIds(friendId.toString());
+        }
+
+        responseObserver.onNext(responseBuilder.build());
+        responseObserver.onCompleted();
     }
     
     @Override 
