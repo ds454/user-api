@@ -38,8 +38,9 @@ public class Main {
         // to the server below.
 
         // Add and build the service.
+        UserService userService = context.getBean(UserService.class);
         s = ServerBuilder.forPort(Main.grpcPort)
-                .addService(ServerInterceptors.intercept(new UserService(), new HeaderInterceptor()))
+                .addService(ServerInterceptors.intercept(userService, new HeaderInterceptor()))
                 .addService(new InternalUserService())
                 .addService(new AddUserService())
                 .build()

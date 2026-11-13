@@ -19,7 +19,7 @@ import java.util.Properties;
 
 @Configuration
 @EnableJpaRepositories(basePackages = "ds454.locomotive.userapi.repository")
-@EnableTransactionManagement
+@EnableTransactionManagement(proxyTargetClass = true)
 public class PersistenceConfig {
 
     private static final Logger log = LoggerFactory.getLogger(PersistenceConfig.class);
