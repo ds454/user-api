@@ -274,7 +274,6 @@ public class UserService extends UserServiceImplBase {
         }
         
         // Get and update the fields of the user.
-        // TODO: honestly, it doesn't matter. Add updating the password here.
         User user = userFromRepo.get();
         user.setUsername(request.getUsername());
         user.setSteamAccountName(request.getSteamAccountName());
@@ -283,6 +282,8 @@ public class UserService extends UserServiceImplBase {
         user.setPassword(request.getPassword());
         // Save to repository
         userRepo.save(user);
+        // Get user again to make sure you send the most up-to-date version.
+        user = userRepo.findById(uuid).get();
         
         // Send response
         log.info("Updated user {} ({})", user.getUsername(), user.getId());
