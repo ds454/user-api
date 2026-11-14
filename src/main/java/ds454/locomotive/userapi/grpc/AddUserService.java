@@ -47,10 +47,9 @@ public class AddUserService extends AddUserServiceImplBase {
         
         // Initialize variables
         String username = request.getUsername();
-        String emailAddress = request.getEmailAddress();
-        String steamAccountName = request.getSteamAccountName();
         String steamAccountId = request.getSteamAccountId();
         String password = request.getPassword();
+        String steamAccountName;
         // Create the user, and don't forget error handling, especially with add requests.
         // Validate Steam Account. If invalid, return an error. Use GetUserInformationFromSteamId
         
@@ -107,17 +106,18 @@ public class AddUserService extends AddUserServiceImplBase {
                 return;
             }
             case STEAM_USER_INFO -> {
-                String actualName = steamResponse.getSteamUserInfo().getSteamUsername();
-                if (!actualName.equals(steamAccountName)) {
-                    GrpcUtils.sendProblem(responseObserver, ProblemType.InvalidInput, "steamAccountName",
-                            "Steam account name doesn't match that Steam ID",
-                            problem -> AddUserResponse.newBuilder().setProblem(problem).build());
-                    return;
-                }
+                steamAccountName = steamResponse.getSteamUserInfo().getSteamUsername();
             }
             case RESULT_NOT_SET -> {
                 GrpcUtils.sendProblem(responseObserver, ProblemType.ServerError, null,
                         "Steam service returned an empty response",
+                        problem -> AddUserResponse.newBuilder().setProblem(problem).build());
+                return;
+            }
+            default -> {
+                log.error("Impossible state reached! Steam service returned {}, which was not handled", steamResponse.getResultCase().name());
+                GrpcUtils.sendProblem(responseObserver, ProblemType.ServerError, null,
+                        "Internal Server Error",
                         problem -> AddUserResponse.newBuilder().setProblem(problem).build());
                 return;
             }
@@ -126,11 +126,11 @@ public class AddUserService extends AddUserServiceImplBase {
         // 4. Save. Hibernate generates the UUID here. The unique constraint on
         //    username backstops the race between the check in step 2 and this insert.
         try {
-            User saved = userRepo.save(new User(username, emailAddress, steamAccountName, steamAccountId, password));
+            User saved = userRepo.save(new User(username, steamAccountName, steamAccountId, password));
             log.info("Created user {} ({})", saved.getUsername(), saved.getId());
             // 5. Return the new user's information. A brand-new user has no friends.
             var info = LocomotiveUserInformation.newBuilder().setUsername(saved.getUsername())
-                                .setEmailAddress(emailAddress).setSteamAccountName(steamAccountName)
+                                .setSteamAccountName(steamAccountName)
                                 .setSteamAccountId(steamAccountId).build();
 
             responseObserver.onNext(AddUserResponse.newBuilder().setUserInfo(info).build());

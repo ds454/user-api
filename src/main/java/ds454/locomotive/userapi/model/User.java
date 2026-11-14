@@ -31,10 +31,6 @@ public class User {
     @Setter
     @Column(nullable = false, unique = true)
     private String username;
-
-    @Getter
-    @Setter
-    private String emailAddress;
     
     @Getter
     @Setter
@@ -59,10 +55,9 @@ public class User {
     public User() {
     }
 
-    public User(String username, String emailAddress, String steamAccountName, String steamAccountId, String password) {
+    public User(String username, String steamAccountName, String steamAccountId, String password) {
         // UUID is assigned on call to save(), which makes sense to me.
         this.username = username;
-        this.emailAddress = emailAddress;
         this.steamAccountName = steamAccountName;
         this.steamAccountId = steamAccountId;
         this.password = password;
