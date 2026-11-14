@@ -13,7 +13,6 @@ import io.grpc.stub.StreamObserver;
 import org.springframework.transaction.annotation.Transactional;
 import ds454.locomotive.generated.grpc.AddFriendRequest;
 import ds454.locomotive.generated.grpc.AddFriendResponse;
-import ds454.locomotive.generated.grpc.AddUserResponse;
 import ds454.locomotive.generated.grpc.DeleteAccountRequest;
 import ds454.locomotive.generated.grpc.DeleteAccountResponse;
 import ds454.locomotive.generated.grpc.GetThisUserRequest;
