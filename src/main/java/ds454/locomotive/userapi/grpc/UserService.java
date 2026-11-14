@@ -72,8 +72,14 @@ public class UserService extends UserServiceImplBase {
         }
         User user = userFromRepo.get();
         // Build response from user data
-        var info = LocomotiveUserInformation.newBuilder().setUsername(user.getUsername()).setEmailAddress(user.getEmailAddress())      
-                        .setSteamAccountName(user.getSteamAccountName()).setSteamAccountId(user.getSteamAccountId()).build();
+        var info = LocomotiveUserInformation
+            .newBuilder()
+            // Add the friend uuids to the response
+            .addAllFriendIds(user.getFriends().stream().map(uuid -> uuid.toString()).toList())
+            .setUsername(user.getUsername())
+            .setSteamAccountName(user.getSteamAccountName())
+            .setSteamAccountId(user.getSteamAccountId())
+            .build();
         
         responseObserver.onNext(GetUserResponse.newBuilder().setUserInfo(info).build());
         responseObserver.onCompleted();
@@ -97,8 +103,12 @@ public class UserService extends UserServiceImplBase {
         }
         User user = userFromRepo.get();
         // Build response from user data
-        var info = LocomotiveUserInformation.newBuilder().setUsername(user.getUsername()).setEmailAddress(user.getEmailAddress())      
-                        .setSteamAccountName(user.getSteamAccountName()).setSteamAccountId(user.getSteamAccountId()).build();
+        var info = LocomotiveUserInformation.newBuilder()
+            .addAllFriendIds(user.getFriends().stream().map(Uuid -> Uuid.toString()).toList())
+            .setUsername(user.getUsername())
+            .setSteamAccountName(user.getSteamAccountName())
+            .setSteamAccountId(user.getSteamAccountId())
+            .build();
         
         responseObserver.onNext(GetThisUserResponse.newBuilder().setUserInfo(info).build());
         responseObserver.onCompleted();
@@ -278,7 +288,6 @@ public class UserService extends UserServiceImplBase {
         user.setUsername(request.getUsername());
         user.setSteamAccountName(request.getSteamAccountName());
         user.setSteamAccountId(request.getSteamAccountId());
-        user.setEmailAddress(request.getEmailAddress());
         user.setPassword(request.getPassword());
         // Save to repository
         userRepo.save(user);
@@ -288,9 +297,12 @@ public class UserService extends UserServiceImplBase {
         // Send response
         log.info("Updated user {} ({})", user.getUsername(), user.getId());
         // 5. Return the new user's information. A brand-new user has no friends.
-        var info = LocomotiveUserInformation.newBuilder().setUsername(user.getUsername())
-                        .setEmailAddress(user.getEmailAddress()).setSteamAccountName(user.getSteamAccountName())
-                        .setSteamAccountId(user.getSteamAccountId()).build();
+        var info = LocomotiveUserInformation
+            .newBuilder()
+            .setUsername(user.getUsername())
+            .setSteamAccountName(user.getSteamAccountName())
+            .setSteamAccountId(user.getSteamAccountId())
+            .build();
 
         responseObserver.onNext(UpdateUserResponse.newBuilder().setUserInfo(info).build());
         responseObserver.onCompleted();
